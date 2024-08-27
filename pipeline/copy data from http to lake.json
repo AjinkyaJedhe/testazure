@@ -1,0 +1,108 @@
+{
+	"name": "copy data from http to lake",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data from http to gen",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set override variable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "HttpReadSettings",
+							"requestMethod": "GET"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Ds_inputhttp",
+						"type": "DatasetReference",
+						"parameters": {
+							"BaseUrl": {
+								"value": "@variables('SourceBaseUrl')",
+								"type": "Expression"
+							},
+							"RelativeUrl": {
+								"value": "@variables('SorceRelativeUrl')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Ds_outputadls",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Set override variable",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "SorceRelativeUrl",
+					"value": "datasets/covid-19/main/data/countries-aggregated.csv"
+				}
+			}
+		],
+		"variables": {
+			"SourceBaseUrl": {
+				"type": "String",
+				"defaultValue": "https://raw.githubusercontent.com/"
+			},
+			"SorceRelativeUrl": {
+				"type": "String",
+				"defaultValue": "datasets/covid-19/main/data/countries-aggregated.csv"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-08-20T05:03:10Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
